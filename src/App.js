@@ -1,24 +1,17 @@
-import logo from './logo.svg';
-import './App.css';
+import 'bootstrap/dist/css/bootstrap.min.css'
+import Login from './Login';
+import Dashboard from './Dashboard';
+
+
+// on the login page once you've logged in with spotify page, we have our code that's inside of our url, every time we access this page, we want to get that code from our url
+// this is going to get the portion of our code after the question mark. It's going to retrurn an object. 'code' is going to get us the url param that is called code. If we have a code, then we want to render a new component. 
+const code = new URLSearchParams(window.location.search).get('code')
+
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    // if we have a code then render out our Dashboard component, otherwise, render login component
+    code ? <Dashboard code={code} /> : <Login />
   );
 }
 
