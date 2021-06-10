@@ -11,6 +11,7 @@ app.post('/login', (req, res) => {
         clientSecret: 'a77f115b3c6f4a69b9dabe7874608061'
     })
     spotifyApi
+    // authorizing that we have a code, it's going to give us a refresh token so we can do the accessing and refreshing of our authentication
     .authorizationCodeGrant(code)
     .then(data => {
       res.json({
@@ -23,3 +24,5 @@ app.post('/login', (req, res) => {
       res.sendStatus(400)
     })
 })
+
+app.listen(3001)
