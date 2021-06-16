@@ -1,17 +1,47 @@
-const express = require('express')
-const SpotifyWebApi = require('spotify-web-api-node')
+require("dotenv").config()
+const express = require("express")
+const cors = require("cors")
+const bodyParser = require("body-parser")
+const lyricsFinder = require("lyrics-finder")
+const SpotifyWebApi = require("spotify-web-api-node")
 
 const app = express()
+app.use(cors())
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
 
-app.post('/login', (req, res) => {
-    const code = req.body.code
-    const spotifyApi = new SpotifyWebApi({
-        redirectUri: 'http://localhost:3000',
-        clientId: '8b945ef10ea24755b83ac50cede405a0',
-        clientSecret: 'a77f115b3c6f4a69b9dabe7874608061'
+app.post("/refresh", (req, res) => {
+  const refreshToken = req.body.refreshToken
+  const spotifyApi = new SpotifyWebApi({
+    redirectUri: process.env.REDIRECT_URI,
+    clientId: process.env.CLIENT_ID,
+    clientSecret: process.env.CLIENT_SECRET,
+    refreshToken,
+  })
+
+  spotifyApi
+    .refreshAccessToken()
+    .then(data => {
+      res.json({
+        accessToken: data.body.accessToken,
+        expiresIn: data.body.expiresIn,
+      })
     })
-    spotifyApi
-    // authorizing that we have a code, it's going to give us a refresh token so we can do the accessing and refreshing of our authentication
+    .catch(err => {
+      console.log(err)
+      res.sendStatus(400)
+    })
+})
+
+app.post("/login", (req, res) => {
+  const code = req.body.code
+  const spotifyApi = new SpotifyWebApi({
+    redirectUri: process.env.REDIRECT_URI,
+    clientId: process.env.CLIENT_ID,
+    clientSecret: process.env.CLIENT_SECRET,
+  })
+
+  spotifyApi
     .authorizationCodeGrant(code)
     .then(data => {
       res.json({
@@ -23,6 +53,12 @@ app.post('/login', (req, res) => {
     .catch(err => {
       res.sendStatus(400)
     })
+})
+
+app.get("/lyrics", async (req, res) => {
+  const lyrics =
+    (await lyricsFinder(req.query.artist, req.query.track)) || "No Lyrics Found"
+  res.json({ lyrics })
 })
 
 app.listen(3001)
